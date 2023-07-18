@@ -158,6 +158,7 @@ const nextTurnOf = (player) => {
 
 const runGame = (game, displayResult, askForNextInput, onOver) => {
   const container = document.querySelector('#container');
+  askForNextInput(game.status().currentPlayerName);
 
   container.onclick = (e) => {
     const box = e.target;
