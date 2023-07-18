@@ -177,17 +177,13 @@ const clearPlayersMoves = () => {
 const askForNewGame = () => {
   setTimeout(() => {
     confirmation = confirm('Another Quick Game?');
-    if (confirmation) playTicTacToe();
     clearPlayersMoves();
+    if (confirmation) playTicTacToe();
   }, 500);
 };
 
-const runGame = (game) => {
-  const container = document.querySelector('#container');
-  renderBoard(game.status());
-
-  container.onclick = (e) => {
-    const box = e.target;
+const setupBoxListener = (box, game) => {
+  box.onclick = () => {
     const move = keymap[box.id];
 
     game.consolidateMove(move);
@@ -198,6 +194,12 @@ const runGame = (game) => {
       return;
     }
   };
+};
+
+const runGame = (game) => {
+  renderBoard(game.status());
+  const boxes = [...document.getElementsByClassName('box')];
+  boxes.forEach((box) => setupBoxListener(box, game));
 };
 
 const playTicTacToe = () => {
