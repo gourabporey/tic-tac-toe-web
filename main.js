@@ -135,7 +135,7 @@ const SYMBOLS = ['O', 'X'];
 
 const getBoxId = (move) => `box${+move + 1}`;
 
-const renderBoard = (moves) => {
+const renderMoves = (moves) => {
   Object.entries(moves).forEach(([move, symbol]) => {
     const boxId = getBoxId(move);
     const box = document.getElementById(boxId);
@@ -156,28 +156,18 @@ const nextTurnOf = (player) => {
   playerInfoContainer.innerText = `${player}'s turn`;
 };
 
-const runGame = (game, displayResult, askForNextInput, onOver) => {
-  const container = document.querySelector('#container');
-  askForNextInput(game.status().currentPlayerName);
+const renderBoard = ({ moves, currentPlayerName, winner, isOver }) => {
+  renderMoves(moves);
 
-  container.onclick = (e) => {
-    const box = e.target;
-    const move = keymap[box.id];
-    game.consolidateMove(move);
-    const { moves, currentPlayerName, winner, isOver } = game.status();
-    renderBoard(moves);
+  if (isOver) {
+    displayResult(winner);
+    return;
+  }
 
-    if (isOver) {
-      displayResult(winner);
-      onOver();
-      return;
-    }
-
-    askForNextInput(currentPlayerName);
-  };
+  nextTurnOf(currentPlayerName);
 };
 
-const clearBoard = () => {
+const clearPlayersMoves = () => {
   const allElements = document.querySelectorAll('.box, #current-player');
   Array.from(allElements).forEach((element) => {
     element.innerText = '';
@@ -186,15 +176,33 @@ const clearBoard = () => {
 
 const askForNewGame = () => {
   setTimeout(() => {
-    confirmation = prompt('Do you want to play again?[y/n]') === 'y';
+    confirmation = confirm('Another Quick Game?');
     if (confirmation) playTicTacToe();
-    clearBoard();
-  }, 600);
+    clearPlayersMoves();
+  }, 500);
+};
+
+const runGame = (game) => {
+  const container = document.querySelector('#container');
+  renderBoard(game.status());
+
+  container.onclick = (e) => {
+    const box = e.target;
+    const move = keymap[box.id];
+
+    game.consolidateMove(move);
+    renderBoard(game.status());
+
+    if (game.status().isOver) {
+      askForNewGame();
+      return;
+    }
+  };
 };
 
 const playTicTacToe = () => {
-  const player1Name = prompt('Enter player 1 name: ');
-  const player2Name = prompt('Enter player 2 name: ');
+  const player1Name = prompt('Enter player 1 name: ') || 'Tom';
+  const player2Name = prompt('Enter player 2 name: ') || 'Jerry';
 
   const player1 = new Player(player1Name, SYMBOLS[0]);
   const player2 = new Player(player2Name, SYMBOLS[1]);
@@ -203,7 +211,7 @@ const playTicTacToe = () => {
 
   const game = new Game(players);
 
-  runGame(game, displayResult, nextTurnOf, askForNewGame);
+  runGame(game);
 };
 
 window.onload = playTicTacToe;
